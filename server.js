@@ -7,74 +7,72 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// CONNECT DATABASE
-mongoose.connect(
-"mongodb+srv://localServices:localServices%402026@localservices.hswzk2c.mongodb.net/localServices?retryWrites=true&w=majority"
-)
+app.get("/", (req,res)=>{
+  res.send("Electrician API Running 🚀");
+});
+
+// DATABASE
+mongoose.connect(process.env.MONGODB_URI)
 .then(()=>console.log("MongoDB Connected"))
 .catch(err=>console.log(err));
 
+// MODELS
 const electricianSchema = new mongoose.Schema({
-  name: String,
-  phone: String,
-  area: String,
-  experience: Number
+  name:String,
+  phone:String,
+  whatsapp:String,
+  area:String,
+  address:String,
+  category:String,
+  serviceType:String,
+  experience:Number,
+  rating:Number,
+  totalRatings:Number,
+  image:String
 });
 
-const Electrician = mongoose.model("Electrician", electricianSchema);
+const Electrician = mongoose.model("Electrician",electricianSchema);
 
-// API
-app.get("/electricians/:area", async (req, res) => {
-  const area = req.params.area;
-
-  const data = await Electrician.find({ area });
-
-  res.json(data);
-});
-
-app.listen(5000, () =>
-  console.log("Server running on port 5000")
-);
-// ADD ELECTRICIAN
-app.post("/electricians", async (req, res) => {
-
-  const { name, phone, area, experience } = req.body;
-
-  const newElectrician = new Electrician({
-    name,
-    phone,
-    area,
-    experience
-  });
-
-  await newElectrician.save();
-
-  res.json({
-    message: "Electrician Added Successfully"
-  });
-
-});
 const userSchema = new mongoose.Schema({
- email:String,
- password:String
+  email:String,
+  password:String
 });
 
 const User = mongoose.model("User",userSchema);
-app.post("/register", async (req,res)=>{
 
- const user = new User(req.body);
- await user.save();
-
- res.json({message:"User Registered"});
+// GET ELECTRICIANS
+app.get("/electricians/:area", async(req,res)=>{
+  const data = await Electrician.find({area:req.params.area});
+  res.json(data);
 });
-app.post("/login", async (req,res)=>{
 
- const {email,password}=req.body;
+// ADD ELECTRICIAN
+app.post("/electricians", async(req,res)=>{
+  const electrician = new Electrician(req.body);
+  await electrician.save();
+  res.json({message:"Electrician Added"});
+});
 
- const user = await User.findOne({email,password});
+// REGISTER
+app.post("/register", async(req,res)=>{
+  const user = new User(req.body);
+  await user.save();
+  res.json({message:"User Registered"});
+});
 
- if(!user)
-   return res.status(401).json({message:"Invalid Login"});
+// LOGIN
+app.post("/login", async(req,res)=>{
+  const user = await User.findOne(req.body);
 
- res.json({message:"Login Success"});
+  if(!user)
+    return res.status(401).json({message:"Invalid Login"});
+
+  res.json({message:"Login Success"});
+});
+
+// PORT
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, ()=>{
+  console.log(`Server running on port ${PORT}`);
 });
