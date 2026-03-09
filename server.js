@@ -49,10 +49,16 @@ app.get("/electricians/:area", async(req,res)=>{
 });
 
 // ADD ELECTRICIAN
-app.post("/electricians", async(req,res)=>{
-  const electrician = new Electrician(req.body);
-  await electrician.save();
-  res.json({message:"Electrician Added"});
+app.get("/electricians/:area", async (req, res) => {
+
+  const area = req.params.area;
+
+  const data = await Electrician.find({
+    area: { $regex: area, $options: "i" }
+  });
+
+  res.json(data);
+
 });
 
 // REGISTER
