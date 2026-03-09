@@ -84,3 +84,11 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, ()=>{
   console.log(`Server running on port ${PORT}`);
 });
+// GET ALL AREAS (FOR AUTOCOMPLETE)
+app.get("/areas", async (req,res)=>{
+
+  const areas = await Electrician.distinct("area");
+
+  res.json(areas);
+
+});
